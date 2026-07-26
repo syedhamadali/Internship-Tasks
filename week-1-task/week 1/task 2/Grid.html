@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — Grid</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f3f4f6; padding: 24px; }
+
+    .layout {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header, footer { background: #111827; color: #fff; padding: 32px; text-align: center; border-radius: 12px; }
+    header h1 { margin-bottom: 8px; font-size: 28px; }
+    header p, footer p { color: #9ca3af; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+    }
+    .card.featured { border-color: #6366f1; background: #eef2ff; position: relative; }
+    .badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: #6366f1; color: #fff; padding: 4px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+    }
+    .plan { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .price { font-size: 42px; font-weight: 800; margin: 16px 0; }
+    .price span { font-size: 16px; font-weight: 500; color: #6b7280; }
+    .features { list-style: none; margin: 24px 0; }
+    .features li { padding: 8px 0; color: #4b5563; border-bottom: 1px solid #f3f4f6; }
+    .features li:last-child { border-bottom: none; }
+    .btn {
+      display: inline-block; padding: 12px 32px; border-radius: 8px;
+      font-weight: 600; text-decoration: none; border: 2px solid #e5e7eb;
+      background: #fff; color: #374151; cursor: pointer;
+    }
+    .btn-primary { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Simple Pricing</h1>
+      <p>Choose the plan that fits your needs</p>
+    </header>
+
+    <div class="cards">
+      <div class="card">
+        <div class="plan">Starter</div>
+        <div class="price">$9<span>/mo</span></div>
+        <ul class="features">
+          <li>1 user</li><li>5 projects</li><li>Basic support</li>
+        </ul>
+        <a class="btn">Get Started</a>
+      </div>
+      <div class="card featured">
+        <div class="badge">Popular</div>
+        <div class="plan">Pro</div>
+        <div class="price">$29<span>/mo</span></div>
+        <ul class="features">
+          <li>5 users</li><li>Unlimited projects</li><li>Priority support</li>
+        </ul>
+        <a class="btn btn-primary">Get Started</a>
+      </div>
+      <div class="card">
+        <div class="plan">Enterprise</div>
+        <div class="price">$99<span>/mo</span></div>
+        <ul class="features">
+          <li>Unlimited users</li><li>Unlimited projects</li><li>24/7 dedicated support</li>
+        </ul>
+        <a class="btn">Contact Sales</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 Simple Pricing Inc. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>
