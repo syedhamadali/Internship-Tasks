@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  ANIMATION PHILOSOPHY
+  =====================
+  Motion earns its place only when it communicates — marking arrival (hero text
+  fading in tells you "this is the moment"), guiding sequence (staggered cards
+  show there are more to discover), or signalling interactivity (a button lifting
+  on hover confirms it is pressable). Every keyframe here is slow and calm
+  (3–6 s) so the page feels alive without feeling restless; hover transitions
+  are short (200–300 ms) so they feel responsive, not sluggish. Once an element
+  has revealed itself it never re-animates — scroll-reveal fires once and
+  unobserves, because the message has been delivered. Users who have requested
+  reduced motion via their OS get a zero-animation experience; all @keyframes
+  and Intersection Observer reveals degrade to an immediately-visible state.
+-->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumen — Where product thinking compounds.</title>
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:      #080e1e;
+  --navy-2:    #0d1630;
+  --navy-3:    #111e40;
+  --violet:    #7c5cfc;
+  --violet-lt: #a98bfd;
+  --violet-dk: #5a3de0;
+  --indigo:    #3b4fd8;
+  --off-white: #f5f4f0;
+  --white:     #ffffff;
+  --muted:     #8892a4;
+  --card-bg:   #ffffff;
+  --card-bdr:  #e8e5f0;
+  --text-dark: #1a1e2e;
+  --text-body: #4a5068;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-card: 0 2px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-card-hover: 0 12px 40px rgba(124,92,252,.14), 0 4px 12px rgba(0,0,0,.08);
+  --transition-ui: 220ms cubic-bezier(.4,0,.2,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--off-white);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { display: block; max-width: 100%; }
+a { text-decoration: none; color: inherit; }
+
+/* ─── KEYFRAMES ─────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatOrb {
+  0%,100% { transform: translateY(0px) rotate(0deg); }
+  33%      { transform: translateY(-14px) rotate(1.5deg); }
+  66%      { transform: translateY(-7px) rotate(-1deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes pulseCTA {
+  0%,100% { box-shadow: 0 0 0 0 rgba(124,92,252,.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(124,92,252,0); }
+}
+
+@keyframes glowSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── PREFERS-REDUCED-MOTION ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .hero-text, .hero-sub, .hero-actions { animation: none !important; opacity: 1 !important; }
+  .hero-visual { animation: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
+/* ─── NAVIGATION ────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%;
+  height: 64px;
+  background: rgba(8,14,30,.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 9px;
+  font-weight: 700; font-size: 1.15rem;
+  color: var(--white); letter-spacing: -.01em;
+}
+
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--violet) 0%, var(--indigo) 100%);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 32px; list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,.7);
+  font-size: .9rem;
+  transition: color var(--transition-ui);
+}
+.nav-links a:hover { color: var(--white); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .9rem; font-weight: 600; border: none; cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-ui),
+    transform var(--transition-ui),
+    box-shadow var(--transition-ui),
+    color var(--transition-ui);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--violet);
+  color: var(--white);
+  padding: 10px 22px;
+}
+.btn-primary:hover {
+  background: var(--violet-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(124,92,252,.4);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  padding: 10px 22px;
+  border: 1.5px solid rgba(255,255,255,.25);
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.5);
+  transform: translateY(-2px);
+}
+
+.btn-outline-dark {
+  background: transparent;
+  color: var(--text-dark);
+  padding: 13px 28px;
+  border: 1.5px solid var(--card-bdr);
+  font-size: 1rem;
+}
+.btn-outline-dark:hover {
+  background: rgba(124,92,252,.06);
+  border-color: var(--violet);
+  color: var(--violet);
+  transform: translateY(-2px);
+}
+
+.btn-lg {
+  padding: 15px 36px;
+  font-size: 1.05rem;
+  border-radius: var(--radius-md);
+}
+
+/* ─── HERO ──────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex; align-items: center;
+  padding: 100px 5% 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-glow {
+  position: absolute;
+  width: 680px; height: 680px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,92,252,.18) 0%, transparent 70%);
+  top: -160px; right: -80px;
+  pointer-events: none;
+}
+.hero-bg-glow-2 {
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,79,216,.14) 0%, transparent 70%);
+  bottom: -100px; left: 10%;
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 1160px; margin: 0 auto; width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative; z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(124,92,252,.15);
+  border: 1px solid rgba(124,92,252,.3);
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-size: .8rem; font-weight: 600;
+  color: var(--violet-lt);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  width: fit-content;
+
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,.08) 40%,
+    transparent 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 3.5s linear infinite;
+}
+
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--violet-lt);
+}
+
+.hero-text {
+  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+  font-weight: 800; line-height: 1.1;
+  color: var(--white);
+  letter-spacing: -.03em;
+  margin-bottom: 20px;
+  animation: fadeInUp .7s cubic-bezier(.4,0,.2,1) .1s both;
+}
+
+.hero-text span {
+  background: linear-gradient(135deg, var(--violet-lt) 0%, #c4b0ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: 1.12rem; color: rgba(255,255,255,.58);
+  max-width: 440px; line-height: 1.7;
+  margin-bottom: 36px;
+  animation: fadeInUp .7s cubic-bezier(.4,0,.2,1) .25s both;
+}
+
+.hero-actions {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  animation: fadeInUp .7s cubic-bezier(.4,0,.2,1) .4s both;
+}
+
+.btn-hero-primary {
+  background: var(--violet);
+  color: var(--white);
+  padding: 14px 30px;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  animation: pulseCTA 3.2s ease-in-out 1.5s infinite;
+}
+.btn-hero-primary:hover {
+  background: var(--violet-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(124,92,252,.5);
+  animation: none;
+}
+
+/* ─── HERO VISUAL ───────────────────────────────────────── */
+.hero-visual {
+  display: flex; align-items: center; justify-content: center;
+  animation: floatOrb 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.orb-container {
+  position: relative;
+  width: 380px; height: 380px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.orb-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(124,92,252,.2);
+}
+.orb-ring:nth-child(1) { width: 100%; height: 100%; }
+.orb-ring:nth-child(2) { width: 78%; height: 78%; border-color: rgba(124,92,252,.25); }
+.orb-ring:nth-child(3) { width: 58%; height: 58%; border-color: rgba(124,92,252,.3); }
+
+.orb-spin {
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-top-color: rgba(124,92,252,.5);
+  border-right-color: rgba(124,92,252,.2);
+  animation: glowSpin 8s linear infinite;
+}
+
+.orb-core {
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%,
+    rgba(164,140,255,.9) 0%,
+    rgba(124,92,252,.85) 40%,
+    rgba(59,79,216,.7) 75%,
+    rgba(13,22,48,.4) 100%
+  );
+  box-shadow:
+    0 0 60px rgba(124,92,252,.5),
+    0 0 120px rgba(124,92,252,.2),
+    inset 0 0 40px rgba(255,255,255,.08);
+  position: relative; z-index: 1;
+}
+
+.orb-chip {
+  position: absolute;
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: .78rem; color: rgba(255,255,255,.85);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.orb-chip-1 { top: 24px; right: 10px; }
+.orb-chip-2 { bottom: 48px; left: 0px; }
+.orb-chip-3 { bottom: 100px; right: 0px; }
+
+.chip-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+.chip-dot-green  { background: #34d399; }
+.chip-dot-violet { background: var(--violet-lt); }
+.chip-dot-amber  { background: #fbbf24; }
+
+/* ─── SECTION SHARED ─────────────────────────────────────── */
+.section { padding: 96px 5%; }
+
+.section-inner { max-width: 1160px; margin: 0 auto; }
+
+.section-eyebrow {
+  font-size: .78rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--violet);
+  margin-bottom: 12px;
+}
+
+.section-heading {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 800; letter-spacing: -.025em;
+  color: var(--text-dark);
+  line-height: 1.15;
+}
+
+.section-sub {
+  font-size: 1.05rem; color: var(--text-body);
+  max-width: 520px; margin-top: 12px; line-height: 1.7;
+}
+
+/* ─── FEATURES ───────────────────────────────────────────── */
+.features {
+  background: var(--off-white);
+  border-top: 1px solid var(--card-bdr);
+  border-bottom: 1px solid var(--card-bdr);
+}
+
+.features-header { margin-bottom: 52px; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* ─── REVEAL (Intersection Observer) ─────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity .55s cubic-bezier(.4,0,.2,1),
+    transform .55s cubic-bezier(.4,0,.2,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── FEATURE CARDS ──────────────────────────────────────── */
+.feature-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bdr);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  transition:
+    transform var(--transition-ui),
+    box-shadow var(--transition-ui),
+    border-color var(--transition-ui);
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(124,92,252,.25);
+}
+
+.feature-icon-wrap {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+
+.feature-title {
+  font-size: 1.02rem; font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px; letter-spacing: -.01em;
+}
+
+.feature-desc {
+  font-size: .9rem; color: var(--text-body);
+  line-height: 1.65;
+}
+
+/* ─── CTA BANNER ─────────────────────────────────────────── */
+.cta-section {
+  background: linear-gradient(135deg, #1a0a3d 0%, #0b1c5c 50%, #0c1232 100%);
+  position: relative; overflow: hidden;
+}
+
+.cta-glow {
+  position: absolute;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,92,252,.22) 0%, transparent 70%);
+  top: -150px; right: -80px;
+  pointer-events: none;
+}
+.cta-glow-2 {
+  position: absolute;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,79,216,.18) 0%, transparent 70%);
+  bottom: -80px; left: 5%;
+  pointer-events: none;
+}
+
+.cta-inner {
+  position: relative; z-index: 1;
+  text-align: center;
+  max-width: 680px; margin: 0 auto;
+}
+
+.cta-heading {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 800; color: var(--white);
+  letter-spacing: -.03em; line-height: 1.12;
+  margin-bottom: 16px;
+}
+.cta-heading span {
+  background: linear-gradient(135deg, var(--violet-lt) 0%, #c4b0ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cta-sub {
+  font-size: 1.05rem; color: rgba(255,255,255,.55);
+  margin-bottom: 36px;
+}
+
+.btn-cta-main {
+  background: var(--white);
+  color: var(--violet-dk);
+  font-size: 1.05rem; font-weight: 700;
+  padding: 15px 38px; border-radius: var(--radius-md);
+}
+.btn-cta-main:hover {
+  background: var(--off-white);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+.footer {
+  background: var(--navy);
+  padding: 28px 5%;
+  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+
+.footer-copy {
+  font-size: .83rem; color: rgba(255,255,255,.35);
+}
+
+.footer-links {
+  display: flex; gap: 24px; list-style: none;
+}
+.footer-links a {
+  font-size: .83rem; color: rgba(255,255,255,.4);
+  transition: color var(--transition-ui);
+}
+.footer-links a:hover { color: rgba(255,255,255,.75); }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-visual { order: -1; }
+  .orb-container { width: 280px; height: 280px; }
+  .orb-core { width: 145px; height: 145px; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 520px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .hero { padding: 90px 5% 60px; }
+  .section { padding: 64px 5%; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn { text-align: center; }
+  .footer { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════ -->
+<nav class="nav" aria-label="Main navigation">
+  <a href="#" class="nav-logo" aria-label="Lumen home">
+    <div class="nav-logo-mark" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2L13.2 5V11L8 14L2.8 11V5L8 2Z" fill="white" fill-opacity=".9"/>
+        <path d="M8 5.5L10.6 7V10L8 11.5L5.4 10V7L8 5.5Z" fill="white" fill-opacity=".4"/>
+      </svg>
+    </div>
+    Lumen
+  </a>
+
+  <ul class="nav-links" role="list">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+    <li><a href="#">Blog</a></li>
+  </ul>
+
+  <a href="#" class="btn btn-primary" aria-label="Start for free">Get started free</a>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+═══════════════════════════════════════ -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-bg-glow" aria-hidden="true"></div>
+  <div class="hero-bg-glow-2" aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge" aria-label="Now in public beta">
+        <span class="hero-badge-dot" aria-hidden="true"></span>
+        Now in public beta
+      </div>
+
+      <h1 class="hero-text" id="hero-heading">
+        Where product thinking<br><span>compounds.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Lumen gives product teams a living notebook that connects decisions,
+        threads, and context — so nothing gets lost between standups.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#" class="btn btn-hero-primary btn-lg" aria-label="Start using Lumen for free">
+          Start for free
+        </a>
+        <a href="#features" class="btn btn-secondary btn-lg" aria-label="See all features">
+          See features
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="orb-container">
+        <div class="orb-ring"></div>
+        <div class="orb-ring"></div>
+        <div class="orb-ring"></div>
+        <div class="orb-spin"></div>
+        <div class="orb-core"></div>
+
+        <div class="orb-chip orb-chip-1">
+          <span class="chip-dot chip-dot-green"></span>
+          Decision logged
+        </div>
+        <div class="orb-chip orb-chip-2">
+          <span class="chip-dot chip-dot-violet"></span>
+          3 threads linked
+        </div>
+        <div class="orb-chip orb-chip-3">
+          <span class="chip-dot chip-dot-amber"></span>
+          Standup ready
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════ -->
+<section class="section features" id="features" aria-labelledby="features-heading">
+  <div class="section-inner">
+    <div class="features-header">
+      <p class="section-eyebrow">Features</p>
+      <h2 class="section-heading" id="features-heading">
+        Built for how product teams actually think.
+      </h2>
+      <p class="section-sub">
+        No more scattered Notion pages or lost Slack threads. Lumen keeps
+        every decision, idea, and update where your team can find it.
+      </p>
+    </div>
+
+    <div class="features-grid" id="features-grid">
+
+      <div class="feature-card reveal" data-delay="0">
+        <div class="feature-icon-wrap" style="background:rgba(124,92,252,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="5" cy="11" r="2.5" fill="#7c5cfc"/>
+            <circle cx="17" cy="5" r="2.5" fill="#7c5cfc"/>
+            <circle cx="17" cy="17" r="2.5" fill="#7c5cfc"/>
+            <line x1="7.2" y1="9.7" x2="14.9" y2="6.3" stroke="#7c5cfc" stroke-width="1.5"/>
+            <line x1="7.2" y1="12.3" x2="14.9" y2="15.7" stroke="#7c5cfc" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Smart Linking</h3>
+        <p class="feature-desc">
+          Automatically surface related decisions, specs, and threads as you
+          type. Context follows you across every page.
+        </p>
+      </div>
+
+      <div class="feature-card reveal" data-delay="1">
+        <div class="feature-icon-wrap" style="background:rgba(52,211,153,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="3" y="3" width="16" height="16" rx="3" stroke="#34d399" stroke-width="1.5"/>
+            <line x1="7" y1="8" x2="15" y2="8" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="7" y1="11" x2="13" y2="11" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="7" y1="14" x2="11" y2="14" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Daily Standup View</h3>
+        <p class="feature-desc">
+          A focused, auto-assembled view of what your team shipped, what
+          is blocked, and what is next — generated every morning.
+        </p>
+      </div>
+
+      <div class="feature-card reveal" data-delay="2">
+        <div class="feature-icon-wrap" style="background:rgba(251,191,36,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 3L19 7V11C19 15.4 15.5 19.1 11 20C6.5 19.1 3 15.4 3 11V7L11 3Z" stroke="#fbbf24" stroke-width="1.5"/>
+            <path d="M8 11L10 13L14 9" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Decision Logs</h3>
+        <p class="feature-desc">
+          Capture the why behind every product call. Structured templates
+          ensure context, alternatives, and outcomes are never missing.
+        </p>
+      </div>
+
+      <div class="feature-card reveal" data-delay="3">
+        <div class="feature-icon-wrap" style="background:rgba(59,130,246,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M4 5H18C18.6 5 19 5.4 19 6V14C19 14.6 18.6 15 18 15H12L8 19V15H4C3.4 15 3 14.6 3 14V6C3 5.4 3.4 5 4 5Z" stroke="#3b82f6" stroke-width="1.5"/>
+            <line x1="7" y1="9" x2="15" y2="9" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="7" y1="12" x2="12" y2="12" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Async Threads</h3>
+        <p class="feature-desc">
+          Keep discussions attached to the docs they belong to. No more
+          context switching between Slack and your spec.
+        </p>
+      </div>
+
+      <div class="feature-card reveal" data-delay="4">
+        <div class="feature-icon-wrap" style="background:rgba(244,63,94,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="#f43f5e" stroke-width="1.5"/>
+            <path d="M11 7V11L14 13" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="1.5" fill="#f43f5e"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Granular Permissions</h3>
+        <p class="feature-desc">
+          Share exactly what stakeholders need. Lock sensitive roadmaps,
+          open exec briefs, or keep discovery private — per page.
+        </p>
+      </div>
+
+      <div class="feature-card reveal" data-delay="5">
+        <div class="feature-icon-wrap" style="background:rgba(124,92,252,.1);" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M3 6H14M3 10H19M3 14H14M3 18H11" stroke="#7c5cfc" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M16 13L18 15L21 11" stroke="#7c5cfc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Markdown + AI Summarize</h3>
+        <p class="feature-desc">
+          Write in pure Markdown, then ask Lumen to distill a long spec into
+          a crisp TL;DR your whole team can skim in 30 seconds.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     CTA BANNER
+═══════════════════════════════════════ -->
+<section class="section cta-section" aria-labelledby="cta-heading">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="cta-glow-2" aria-hidden="true"></div>
+
+  <div class="cta-inner reveal" id="cta-block">
+    <h2 class="cta-heading" id="cta-heading">
+      Start building a notebook your<br><span>whole team actually reads.</span>
+    </h2>
+    <p class="cta-sub">Free for teams up to 5. No credit card required.</p>
+    <a href="#" class="btn btn-cta-main" aria-label="Create your free Lumen workspace">
+      Create your workspace
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<footer class="footer">
+  <p class="footer-copy">
+    &copy; 2025 Lumen, Inc. All rights reserved.
+  </p>
+  <ul class="footer-links" role="list">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Status</a></li>
+    <li><a href="#">Twitter</a></li>
+  </ul>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT — Intersection Observer
+═══════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Graceful degradation ────────────────────────────── */
+  var prefersReducedMotion =
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    /* Make all reveal elements immediately visible */
+    var all = document.querySelectorAll('.reveal');
+    for (var i = 0; i < all.length; i++) {
+      all[i].classList.add('visible');
+      all[i].style.transitionDelay = '0ms';
+    }
+    return;
+  }
+
+  /* ── Stagger delays: 80 ms × card index ──────────────── */
+  var cards = document.querySelectorAll('#features-grid .reveal');
+  for (var j = 0; j < cards.length; j++) {
+    var delay = parseInt(cards[j].getAttribute('data-delay') || 0, 10);
+    cards[j].style.transitionDelay = (delay * 80) + 'ms';
+  }
+
+  /* ── Single observer for all .reveal elements ─────────── */
+  var observer = new IntersectionObserver(function (entries, obs) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        obs.unobserve(entry.target); /* fire once; message delivered */
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  var targets = document.querySelectorAll('.reveal');
+  targets.forEach(function (el) {
+    observer.observe(el);
+  });
+
+  /* ── Disconnect when all items are visible ────────────── */
+  /* (optional safety: if page is scrolled past everything at load) */
+  var visibleCount = 0;
+  function checkAllVisible() {
+    visibleCount = document.querySelectorAll('.reveal.visible').length;
+    if (visibleCount >= targets.length) {
+      observer.disconnect();
+    }
+  }
+  setTimeout(checkAllVisible, 2000);
+
+})();
+</script>
+</body>
+</html>
