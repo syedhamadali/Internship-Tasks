@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Notes</title>
+<style>
+  :root{
+    --paper:#EAE7DD;
+    --card:#F4F2EA;
+    --ink:#20281F;
+    --ink-soft:#5B6355;
+    --rule:#C9C4B2;
+    --moss:#4C6B4F;
+    --moss-deep:#3A5340;
+    --clay:#AE5138;
+    --clay-soft:#C97A63;
+    --mono: 'Courier New', 'Courier Prime', ui-monospace, monospace;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--paper), var(--paper)),
+      repeating-linear-gradient(180deg, transparent, transparent 27px, rgba(32,40,31,0.045) 28px);
+    color: var(--ink);
+    font-family: var(--serif);
+    min-height:100vh;
+  }
+
+  .app{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+  }
+  .brand-eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--moss-deep);
+    display:block;
+    margin-bottom: 4px;
+  }
+  h1{
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .count{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .toolbar{
+    display:flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .search-wrap{
+    flex:1;
+    position:relative;
+  }
+  .search-wrap svg{
+    position:absolute;
+    left:12px; top:50%;
+    transform: translateY(-50%);
+    width:15px; height:15px;
+    color: var(--ink-soft);
+  }
+  .search-wrap input{
+    width:100%;
+    padding: 11px 12px 11px 34px;
+    border: 1.5px solid var(--ink);
+    background: var(--card);
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    border-radius: 3px;
+    outline: none;
+  }
+  .search-wrap input:focus{ border-color: var(--moss); }
+
+  .new-btn{
+    background: var(--moss);
+    color: var(--card);
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    padding: 0 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor:pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .new-btn:hover{ background: var(--moss-deep); }
+  .new-btn:active{ transform: scale(0.97); }
+
+  .layout{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+    align-items:start;
+  }
+  @media (max-width: 760px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* --- Index card list --- */
+  .list{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    max-height: 74vh;
+    overflow-y:auto;
+    padding-right: 2px;
+  }
+
+  .empty-list{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 20px 4px;
+    line-height:1.6;
+  }
+
+  .note-card{
+    position:relative;
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 14px 14px 12px;
+    cursor:pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .note-card::before{
+    content:'';
+    position:absolute;
+    top:-9px; left:14px;
+    width: 14px; height:14px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px var(--card);
+  }
+  .note-card::after{
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px);
+  }
+  .note-card:hover{
+    transform: translateY(-1px);
+    box-shadow: 3px 4px 0 rgba(32,40,31,0.12);
+  }
+  .note-card.active{
+    border-color: var(--moss-deep);
+    box-shadow: 3px 4px 0 rgba(76,107,79,0.25);
+  }
+
+  .note-card h3{
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 700;
+    margin: 4px 0 4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .note-card .snippet{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .note-card .stamp{
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--moss-deep);
+    text-transform: uppercase;
+  }
+
+  /* --- Editor panel --- */
+  .editor{
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    padding: 22px;
+    min-height: 420px;
+  }
+
+  .editor-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height: 420px;
+    text-align:center;
+    color: var(--ink-soft);
+  }
+  .editor-empty svg{ width:34px; height:34px; margin-bottom:12px; opacity:0.6; }
+  .editor-empty p{ font-family: var(--mono); font-size:12px; line-height:1.7; max-width:260px; }
+
+  .field{ margin-bottom: 16px; }
+  .field label{
+    display:block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .field input, .field textarea{
+    width:100%;
+    border: none;
+    border-bottom: 1.5px solid var(--rule);
+    background: transparent;
+    font-family: var(--serif);
+    color: var(--ink);
+    padding: 6px 2px;
+    outline:none;
+    resize: vertical;
+    transition: border-color 0.15s ease;
+  }
+  .field input{ font-size: 20px; font-weight:700; }
+  .field textarea{ font-size: 15px; line-height:1.65; min-height: 220px; }
+  .field input:focus, .field textarea:focus{ border-color: var(--moss); }
+  .field.invalid input, .field.invalid textarea{ border-color: var(--clay); }
+  .field .err{
+    display:none;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--clay);
+    margin-top: 5px;
+  }
+  .field.invalid .err{ display:block; }
+
+  .editor-meta{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    letter-spacing: 0.03em;
+  }
+
+  .editor-actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .btn{
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight:700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor:pointer;
+    border: 1.5px solid var(--ink);
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-save{ background: var(--moss); color: var(--card); }
+  .btn-save:hover{ background: var(--moss-deep); }
+  .btn-delete{ background: transparent; color: var(--clay); border-color: var(--clay-soft); }
+  .btn-delete:hover{ background: rgba(174,81,56,0.08); }
+
+  .save-flash{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--moss-deep);
+    opacity:0;
+    transition: opacity 0.2s ease;
+  }
+  .save-flash.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div>
+      <span class="brand-eyebrow">Field Log</span>
+      <h1>Notes</h1>
+    </div>
+    <div class="count" id="noteCount">0 entries</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search notes...">
+    </div>
+    <button class="new-btn" id="newBtn">+ New Note</button>
+  </div>
+
+  <div class="layout">
+    <div class="list" id="noteList"></div>
+
+    <div class="editor" id="editorWrap">
+      <div class="editor-empty" id="editorEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <p>Select a note from the list, or start a new one.</p>
+      </div>
+
+      <form id="noteForm" style="display:none;">
+        <div class="editor-meta" id="editorMeta"></div>
+
+        <div class="field" id="titleField">
+          <label for="titleInput">Title</label>
+          <input type="text" id="titleInput" placeholder="Untitled" autocomplete="off">
+          <div class="err">Give the note a title before saving.</div>
+        </div>
+
+        <div class="field" id="contentField">
+          <label for="contentInput">Content</label>
+          <textarea id="contentInput" placeholder="Write something..."></textarea>
+          <div class="err">A note needs some content — it can't be saved empty.</div>
+        </div>
+
+        <div class="editor-actions">
+          <button type="button" class="btn btn-delete" id="deleteBtn">Delete</button>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="save-flash" id="saveFlash">Saved ✓</span>
+            <button type="submit" class="btn btn-save">Save Note</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'ledger-notes-app:notes';
+
+  // ---------- Storage layer ----------
+  function loadNotes(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error('Failed to read notes from localStorage', e);
+      return [];
+    }
+  }
+
+  function saveNotes(list){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      console.error('Failed to write notes to localStorage', e);
+      return false;
+    }
+  }
+
+  // ---------- State ----------
+  let notes = loadNotes();
+  let activeId = null;
+  let searchTerm = '';
+
+  // ---------- Elements ----------
+  const noteList = document.getElementById('noteList');
+  const noteCount = document.getElementById('noteCount');
+  const searchInput = document.getElementById('searchInput');
+  const newBtn = document.getElementById('newBtn');
+
+  const editorEmpty = document.getElementById('editorEmpty');
+  const noteForm = document.getElementById('noteForm');
+  const editorMeta = document.getElementById('editorMeta');
+  const titleField = document.getElementById('titleField');
+  const contentField = document.getElementById('contentField');
+  const titleInput = document.getElementById('titleInput');
+  const contentInput = document.getElementById('contentInput');
+  const deleteBtn = document.getElementById('deleteBtn');
+  const saveFlash = document.getElementById('saveFlash');
+
+  // ---------- Helpers ----------
+  function uid(){
+    return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+  }
+
+  function formatStamp(iso){
+    const d = new Date(iso);
+    const datePart = d.toLocaleDateString([], { month:'short', day:'2-digit', year:'numeric' });
+    const timePart = d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    return `${datePart} · ${timePart}`;
+  }
+
+  function snippetOf(text){
+    return text.length > 140 ? text.slice(0, 140) + '…' : text;
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    renderList();
+    renderEditor();
+  }
+
+  function renderList(){
+    const term = searchTerm.trim().toLowerCase();
+    const filtered = notes
+      .filter(n => !term || n.title.toLowerCase().includes(term) || n.content.toLowerCase().includes(term))
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+    noteCount.textContent = `${notes.length} ${notes.length === 1 ? 'entry' : 'entries'}`;
+
+    if (filtered.length === 0){
+      noteList.innerHTML = `<div class="empty-list">${
+        notes.length === 0
+          ? 'No notes yet. Click "+ New Note" to write your first one.'
+          : `No notes match "${escapeHtml(searchTerm)}".`
+      }</div>`;
+      return;
+    }
+
+    noteList.innerHTML = '';
+    filtered.forEach(n => {
+      const card = document.createElement('div');
+      card.className = 'note-card' + (n.id === activeId ? ' active' : '');
+      card.innerHTML = `
+        <h3>${escapeHtml(n.title || 'Untitled')}</h3>
+        <div class="snippet">${escapeHtml(snippetOf(n.content))}</div>
+        <div class="stamp">Edited ${formatStamp(n.updatedAt)}</div>
+      `;
+      card.addEventListener('click', () => selectNote(n.id));
+      noteList.appendChild(card);
+    });
+  }
+
+  function renderEditor(){
+    const note = notes.find(n => n.id === activeId);
+    if (!note){
+      editorEmpty.style.display = 'flex';
+      noteForm.style.display = 'none';
+      return;
+    }
+    editorEmpty.style.display = 'none';
+    noteForm.style.display = 'block';
+
+    titleInput.value = note.title;
+    contentInput.value = note.content;
+    editorMeta.textContent = note._isDraft
+      ? 'New note — not yet saved'
+      : `Created ${formatStamp(note.createdAt)}  ·  Last edited ${formatStamp(note.updatedAt)}`;
+    clearErrors();
+  }
+
+  // ---------- Validation ----------
+  function clearErrors(){
+    titleField.classList.remove('invalid');
+    contentField.classList.remove('invalid');
+  }
+
+  function validate(){
+    let ok = true;
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+
+    titleField.classList.toggle('invalid', title.length === 0);
+    contentField.classList.toggle('invalid', content.length === 0);
+
+    if (title.length === 0) ok = false;
+    if (content.length === 0) ok = false;
+    return ok;
+  }
+
+  // ---------- Actions ----------
+  function selectNote(id){
+    activeId = id;
+    render();
+  }
+
+  function createDraft(){
+    // A draft only becomes a real, persisted note once it's saved.
+    // It lives only in memory until then, so refreshing before saving discards it.
+    const draft = {
+      id: uid(),
+      title: '',
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      _isDraft: true,
+    };
+    notes = [draft, ...notes];
+    activeId = draft.id;
+    render();
+    titleInput.focus();
+  }
+
+  function saveActive(e){
+    e.preventDefault();
+    if (!validate()) return;
+
+    const note = notes.find(n => n.id === activeId);
+    if (!note) return;
+
+    note.title = titleInput.value.trim();
+    note.content = contentInput.value.trim();
+    note.updatedAt = new Date().toISOString();
+    delete note._isDraft;
+
+    saveNotes(notes);
+    render();
+    flashSaved();
+  }
+
+  function deleteActive(){
+    notes = notes.filter(n => n.id !== activeId);
+    saveNotes(notes);
+    activeId = null;
+    render();
+  }
+
+  function flashSaved(){
+    saveFlash.classList.add('show');
+    setTimeout(() => saveFlash.classList.remove('show'), 1400);
+  }
+
+  // ---------- Events ----------
+  newBtn.addEventListener('click', createDraft);
+  noteForm.addEventListener('submit', saveActive);
+  deleteBtn.addEventListener('click', deleteActive);
+
+  searchInput.addEventListener('input', (e) => {
+    searchTerm = e.target.value;
+    renderList();
+  });
+
+  // Live-clear the invalid state as the user types
+  titleInput.addEventListener('input', () => {
+    if (titleInput.value.trim().length > 0) titleField.classList.remove('invalid');
+  });
+  contentInput.addEventListener('input', () => {
+    if (contentInput.value.trim().length > 0) contentField.classList.remove('invalid');
+  });
+
+  // ---------- Init ----------
+  render();
+</script>
+</body>
+</html>
