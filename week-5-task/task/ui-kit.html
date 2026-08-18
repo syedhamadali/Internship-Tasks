@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vanilla UI Kit — Button · Card · Modal · Toast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F4EF;
+    --paper: #FFFFFF;
+    --ink: #17181C;
+    --ink-muted: #63676F;
+    --ink-faint: #9AA0A8;
+    --line: #E3DFD5;
+    --primary: #2451FF;
+    --primary-ink: #FFFFFF;
+    --primary-dim: #E7ECFF;
+    --danger: #E1462C;
+    --danger-dim: #FCE7E3;
+    --success: #1F9D55;
+    --success-dim: #E4F6EA;
+    --warning: #B4790A;
+    --warning-dim: #FBF0DC;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 2px rgba(23,24,28,0.06);
+    --shadow-md: 0 8px 24px rgba(23,24,28,0.10);
+    --shadow-lg: 0 24px 64px rgba(23,24,28,0.22);
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --maxw: 1080px;
+  }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; }
+  html,body{
+    background:var(--bg); color:var(--ink); font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  h1,h2,h3{ font-family:var(--font-display); margin:0; line-height:1.15; }
+  p{ margin:0; }
+  button{ font-family:inherit; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  :focus-visible{ outline:2px solid var(--primary); outline-offset:2px; border-radius:4px; }
+
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 28px; }
+
+  /* ---------- PAGE HEADER ---------- */
+  .page-head{ padding:64px 0 44px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:0.78rem; color:var(--primary);
+    text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px;
+  }
+  .page-head h1{ font-size:clamp(1.9rem, 4vw, 2.6rem); font-weight:800; max-width:16ch; margin-bottom:16px; }
+  .page-head p{ color:var(--ink-muted); max-width:560px; font-size:1.02rem; }
+
+  /* ---------- SECTION SCAFFOLD ---------- */
+  .kit-section{ padding:56px 0; border-bottom:1px solid var(--line); }
+  .kit-section:last-of-type{ border-bottom:none; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:8px; flex-wrap:wrap; }
+  .section-head h2{ font-size:1.5rem; font-weight:700; }
+  .section-tag{
+    font-family:var(--font-mono); font-size:0.76rem; color:var(--ink-faint);
+    background:var(--paper); border:1px solid var(--line); padding:4px 10px; border-radius:100px;
+  }
+  .section-desc{ color:var(--ink-muted); max-width:600px; margin:10px 0 28px; font-size:0.96rem; }
+
+  .demo-block{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:28px; box-shadow:var(--shadow-sm);
+  }
+  .demo-row{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+  .demo-row + .spec{ margin-top:20px; }
+
+  .spec{
+    font-family:var(--font-mono); font-size:0.78rem; color:var(--ink-muted);
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:12px 14px; overflow-x:auto; white-space:pre;
+  }
+  .spec b{ color:var(--primary); font-weight:500; }
+
+  /* ============ BUTTON COMPONENT ============ */
+  .btn{
+    font-family:var(--font-body); font-weight:600; border-radius:var(--radius-sm);
+    border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+    transition:transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    white-space:nowrap;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn:disabled{ opacity:0.45; cursor:not-allowed; transform:none; }
+
+  .btn-sm{ font-size:0.82rem; padding:7px 14px; }
+  .btn-md{ font-size:0.92rem; padding:10px 18px; }
+  .btn-lg{ font-size:1rem; padding:13px 24px; }
+
+  .btn-primary{ background:var(--primary); color:var(--primary-ink); }
+  .btn-primary:hover:not(:disabled){ box-shadow:0 6px 18px rgba(36,81,255,0.28); transform:translateY(-1px); }
+
+  .btn-secondary{ background:var(--paper); color:var(--ink); border-color:var(--line); }
+  .btn-secondary:hover:not(:disabled){ border-color:var(--ink-faint); transform:translateY(-1px); }
+
+  .btn-ghost{ background:transparent; color:var(--ink); }
+  .btn-ghost:hover:not(:disabled){ background:var(--bg); }
+
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-danger:hover:not(:disabled){ box-shadow:0 6px 18px rgba(225,70,44,0.28); transform:translateY(-1px); }
+
+  .btn-success{ background:var(--success); color:#fff; }
+  .btn-success:hover:not(:disabled){ box-shadow:0 6px 18px rgba(31,157,85,0.28); transform:translateY(-1px); }
+
+  .btn-icon{ font-size:1em; line-height:1; }
+
+  /* ============ CARD COMPONENT ============ */
+  .card-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .ui-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+    transition:transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .ui-card.elevated{ box-shadow:var(--shadow-md); }
+  .ui-card.elevated:hover{ transform:translateY(-4px); box-shadow:0 16px 36px rgba(23,24,28,0.14); }
+  .ui-card.outline{ border:1.5px solid var(--ink); }
+  .ui-card-media{
+    height:120px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:0.76rem; color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+  .ui-card-body{ padding:20px; display:flex; flex-direction:column; gap:8px; flex-grow:1; }
+  .ui-card-eyebrow{ font-family:var(--font-mono); font-size:0.72rem; color:var(--primary); text-transform:uppercase; letter-spacing:0.06em; }
+  .ui-card-title{ font-family:var(--font-display); font-weight:700; font-size:1.08rem; }
+  .ui-card-desc{ color:var(--ink-muted); font-size:0.88rem; flex-grow:1; }
+  .ui-card-footer{ padding:16px 20px; border-top:1px solid var(--line); display:flex; gap:10px; }
+
+  /* ============ MODAL COMPONENT ============ */
+  #modal-root{ position:fixed; inset:0; z-index:1000; pointer-events:none; }
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(23,24,28,0.5);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; transition:opacity 0.2s ease; pointer-events:none;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .modal-box{
+    background:var(--paper); border-radius:var(--radius-lg); width:100%; max-width:440px;
+    box-shadow:var(--shadow-lg); transform:translateY(14px) scale(0.98); opacity:0;
+    transition:transform 0.22s cubic-bezier(.2,.9,.3,1.2), opacity 0.2s ease;
+    max-height:86vh; overflow-y:auto;
+  }
+  .modal-overlay.open .modal-box{ transform:translateY(0) scale(1); opacity:1; }
+  .modal-head{ padding:22px 24px 0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .modal-head h3{ font-size:1.15rem; font-weight:700; }
+  .modal-close-x{
+    background:none; border:none; cursor:pointer; color:var(--ink-faint); font-size:1.3rem;
+    line-height:1; padding:2px 4px; border-radius:6px; flex-shrink:0;
+  }
+  .modal-close-x:hover{ background:var(--bg); color:var(--ink); }
+  .modal-body{ padding:14px 24px 4px; color:var(--ink-muted); font-size:0.94rem; }
+  .modal-body input, .modal-body textarea{
+    width:100%; font-family:inherit; font-size:0.92rem; padding:10px 12px;
+    border:1px solid var(--line); border-radius:var(--radius-sm); margin-top:6px; color:var(--ink);
+  }
+  .modal-body input:focus, .modal-body textarea:focus{ outline:none; border-color:var(--primary); }
+  .modal-field{ margin-bottom:14px; }
+  .modal-field label{ font-size:0.82rem; font-weight:600; color:var(--ink); }
+  .modal-actions{ padding:20px 24px 24px; display:flex; justify-content:flex-end; gap:10px; }
+
+  /* ============ TOAST COMPONENT ============ */
+  #toast-root{
+    position:fixed; top:20px; right:20px; z-index:2000;
+    display:flex; flex-direction:column; gap:10px; width:min(340px, calc(100vw - 40px));
+    pointer-events:none;
+  }
+  .toast{
+    pointer-events:auto; background:var(--ink); color:#fff; border-radius:var(--radius);
+    padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
+    box-shadow:var(--shadow-lg); position:relative; overflow:hidden;
+    transform:translateX(120%); opacity:0; transition:transform 0.28s cubic-bezier(.2,.9,.3,1.1), opacity 0.25s ease;
+  }
+  .toast.in{ transform:translateX(0); opacity:1; }
+  .toast.out{ transform:translateX(120%); opacity:0; }
+  .toast-icon{
+    width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:0.76rem; font-weight:700; margin-top:1px;
+  }
+  .toast-success .toast-icon{ background:var(--success); }
+  .toast-error .toast-icon{ background:var(--danger); }
+  .toast-warning .toast-icon{ background:var(--warning); }
+  .toast-info .toast-icon{ background:var(--primary); }
+  .toast-content{ flex-grow:1; min-width:0; }
+  .toast-title{ font-weight:600; font-size:0.88rem; }
+  .toast-msg{ font-size:0.82rem; color:#C9CCD3; margin-top:2px; }
+  .toast-close{ background:none; border:none; color:#8B8F98; cursor:pointer; font-size:1.05rem; line-height:1; padding:0 2px; flex-shrink:0; }
+  .toast-close:hover{ color:#fff; }
+  .toast-bar{ position:absolute; left:0; bottom:0; height:3px; background:rgba(255,255,255,0.35); width:100%; transform-origin:left; }
+  .toast-bar.animate{ animation: toastShrink linear forwards; }
+  @keyframes toastShrink{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
+
+  /* ---------- NOTES ---------- */
+  .notes{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:28px; font-size:0.98rem; color:var(--ink-muted);
+  }
+  .notes p{ margin-bottom:0; }
+
+  footer{ padding:36px 0 60px; text-align:center; color:var(--ink-faint); font-family:var(--font-mono); font-size:0.8rem; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 820px){
+    .card-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width: 560px){
+    .wrap{ padding:0 18px; }
+    .page-head{ padding:44px 0 32px; }
+    .card-grid{ grid-template-columns:1fr; }
+    .demo-block{ padding:20px; }
+    #toast-root{ top:12px; right:12px; left:12px; width:auto; }
+    .modal-box{ max-width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="wrap">
+    <div class="eyebrow">Vanilla JS · No framework</div>
+    <h1>A small, reusable UI kit — built the way React would build it.</h1>
+    <p>Four components, each a self-contained function that takes props and returns markup or behavior: <b>Button</b>, <b>Card</b>, <b>Modal</b>, and <b>Toast</b>. No global state, no hardcoded instances — every element below is generated from the same four functions.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ BUTTON DEMO ============ -->
+  <section class="kit-section" id="section-button">
+    <div class="section-head">
+      <h2>Button</h2>
+      <span class="section-tag">createButton(props)</span>
+    </div>
+    <p class="section-desc">One function, five variants, three sizes, an icon slot, and a disabled state — all driven by the props object, nothing duplicated in markup.</p>
+    <div class="demo-block">
+      <div class="demo-row" id="btn-variants"></div>
+      <div class="spec">createButton({ <b>text</b>: 'Save changes', <b>variant</b>: 'primary', <b>size</b>: 'md', <b>onClick</b>: fn })</div>
+    </div>
+  </section>
+
+  <!-- ============ CARD DEMO ============ -->
+  <section class="kit-section" id="section-card">
+    <div class="section-head">
+      <h2>Card</h2>
+      <span class="section-tag">createCard(props)</span>
+    </div>
+    <p class="section-desc">Same function rendering three different contexts — a plain info card, an elevated project card with a footer action, and an outlined pricing card.</p>
+    <div class="demo-block">
+      <div class="card-grid" id="card-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ MODAL DEMO ============ -->
+  <section class="kit-section" id="section-modal">
+    <div class="section-head">
+      <h2>Modal</h2>
+      <span class="section-tag">createModal(props)</span>
+    </div>
+    <p class="section-desc">Each trigger opens a modal built by the same function with different content and actions. Close via the × button, the overlay, the Esc key, or an action button — each modal instance manages its own open/close state.</p>
+    <div class="demo-block">
+      <div class="demo-row" id="modal-triggers"></div>
+      <div class="spec">createModal({ <b>title</b>, <b>content</b>, <b>actions</b>: [{ text, variant, onClick, closesModal }] })</div>
+    </div>
+  </section>
+
+  <!-- ============ TOAST DEMO ============ -->
+  <section class="kit-section" id="section-toast">
+    <div class="section-head">
+      <h2>Toast</h2>
+      <span class="section-tag">showToast(props)</span>
+    </div>
+    <p class="section-desc">Click any trigger more than once to see toasts stack. Each toast auto-dismisses on its own timer (shown as a shrinking bar) and can also be dismissed manually — closing one never affects the others.</p>
+    <div class="demo-block">
+      <div class="demo-row" id="toast-triggers"></div>
+      <div class="spec">showToast({ <b>variant</b>: 'success', <b>title</b>, <b>message</b>, <b>duration</b>: 4000 })</div>
+    </div>
+  </section>
+
+  <!-- ============ REFLECTION ============ -->
+  <section class="kit-section">
+    <div class="section-head"><h2>Thinking in components</h2></div>
+    <div class="notes">
+      <p>Earlier tasks — the weather dashboard, the notes app, the portfolio — mostly grew as pages: I'd write a chunk of HTML, style it, then bolt on JS to make that specific chunk interactive. Building this kit forced the opposite order: define the interface first (what props does a button need to cover every variant I'll ever want?), then let every instance on the page — three cards, five buttons, four toast triggers — call that same function instead of writing new markup. It also pushed state ownership down to each component instead of up into page-level variables: each modal and toast manages its own open/closed lifecycle and cleans itself up, so instances never collide, the same way a React component's state doesn't leak into its siblings. The trade-off is more upfront design work per component and a bit more indirection to read, but changing one thing — say, a button's hover shadow — now updates every button on the page instead of requiring me to hunt down five copies.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>Built with plain HTML, CSS and JavaScript — zero dependencies.</footer>
+
+<!-- Modal & Toast mount points -->
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ======================================================================
+     COMPONENT 1 — BUTTON
+     createButton({ text, variant, size, onClick, disabled, icon }) -> HTMLElement
+  ====================================================================== */
+  function createButton(props){
+    const {
+      text = "Button",
+      variant = "primary",   // primary | secondary | ghost | danger | success
+      size = "md",           // sm | md | lg
+      onClick = null,
+      disabled = false,
+      icon = null
+    } = props;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `btn btn-${variant} btn-${size}`;
+    btn.disabled = disabled;
+
+    if (icon) {
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "btn-icon";
+      iconSpan.textContent = icon;
+      btn.appendChild(iconSpan);
+    }
+    btn.appendChild(document.createTextNode(text));
+
+    if (typeof onClick === "function") {
+      btn.addEventListener("click", onClick);
+    }
+    return btn;
+  }
+
+  /* ======================================================================
+     COMPONENT 2 — CARD
+     createCard({ eyebrow, title, description, media, variant, footer }) -> HTMLElement
+     footer: array of button config objects (passed straight to createButton)
+  ====================================================================== */
+  function createCard(props){
+    const {
+      eyebrow = "",
+      title = "Card title",
+      description = "",
+      media = null,          // { label, bg } — rendered as a placeholder block
+      variant = "default",   // default | elevated | outline
+      footer = []             // array of createButton() prop objects
+    } = props;
+
+    const card = document.createElement("article");
+    card.className = `ui-card ${variant === "elevated" ? "elevated" : ""} ${variant === "outline" ? "outline" : ""}`.trim();
+
+    if (media) {
+      const mediaEl = document.createElement("div");
+      mediaEl.className = "ui-card-media";
+      mediaEl.style.background = media.bg || "var(--bg)";
+      mediaEl.textContent = media.label || "";
+      card.appendChild(mediaEl);
+    }
+
+    const body = document.createElement("div");
+    body.className = "ui-card-body";
+
+    if (eyebrow) {
+      const eyebrowEl = document.createElement("div");
+      eyebrowEl.className = "ui-card-eyebrow";
+      eyebrowEl.textContent = eyebrow;
+      body.appendChild(eyebrowEl);
+    }
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "ui-card-title";
+    titleEl.textContent = title;
+    body.appendChild(titleEl);
+
+    if (description) {
+      const descEl = document.createElement("p");
+      descEl.className = "ui-card-desc";
+      descEl.textContent = description;
+      body.appendChild(descEl);
+    }
+
+    card.appendChild(body);
+
+    if (footer.length) {
+      const footerEl = document.createElement("div");
+      footerEl.className = "ui-card-footer";
+      footer.forEach(btnProps => footerEl.appendChild(createButton(btnProps)));
+      card.appendChild(footerEl);
+    }
+
+    return card;
+  }
+
+  /* ======================================================================
+     COMPONENT 3 — MODAL
+     createModal({ title, content, actions, onClose }) -> { open(), close(), destroy() }
+     content: string OR HTMLElement
+     actions: array of { text, variant, onClick, closesModal }
+  ====================================================================== */
+  const modalRoot = document.getElementById("modal-root");
+
+  function createModal(props){
+    const {
+      title = "",
+      content = "",
+      actions = [],
+      onClose = null
+    } = props;
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.style.pointerEvents = "none";
+
+    const box = document.createElement("div");
+    box.className = "modal-box";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+
+    const head = document.createElement("div");
+    head.className = "modal-head";
+    const titleEl = document.createElement("h3");
+    titleEl.textContent = title;
+    const closeX = document.createElement("button");
+    closeX.className = "modal-close-x";
+    closeX.setAttribute("aria-label", "Close dialog");
+    closeX.textContent = "×";
+    head.appendChild(titleEl);
+    head.appendChild(closeX);
+
+    const body = document.createElement("div");
+    body.className = "modal-body";
+    if (typeof content === "string") {
+      body.innerHTML = content;
+    } else if (content instanceof HTMLElement) {
+      body.appendChild(content);
+    }
+
+    const actionsEl = document.createElement("div");
+    actionsEl.className = "modal-actions";
+    actions.forEach(a => {
+      const b = createButton({
+        text: a.text,
+        variant: a.variant || "secondary",
+        size: "md",
+        onClick: () => {
+          if (typeof a.onClick === "function") a.onClick();
+          if (a.closesModal !== false) close();
+        }
+      });
+      actionsEl.appendChild(b);
+    });
+
+    box.appendChild(head);
+    box.appendChild(body);
+    if (actions.length) box.appendChild(actionsEl);
+    overlay.appendChild(box);
+    modalRoot.appendChild(overlay);
+
+    function onKeydown(e){
+      if (e.key === "Escape") close();
+    }
+
+    function open(){
+      overlay.style.pointerEvents = "auto";
+      requestAnimationFrame(() => overlay.classList.add("open"));
+      document.addEventListener("keydown", onKeydown);
+      const focusable = box.querySelector("input, textarea, button");
+      if (focusable) focusable.focus();
+    }
+
+    function close(){
+      overlay.classList.remove("open");
+      overlay.style.pointerEvents = "none";
+      document.removeEventListener("keydown", onKeydown);
+      if (typeof onClose === "function") onClose();
+    }
+
+    function destroy(){
+      close();
+      setTimeout(() => overlay.remove(), 250);
+    }
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+    closeX.addEventListener("click", close);
+
+    return { open, close, destroy, element: overlay };
+  }
+
+  /* ======================================================================
+     COMPONENT 4 — TOAST
+     showToast({ variant, title, message, duration }) -> { close() }
+     Multiple toasts stack vertically in #toast-root; each manages its own timer.
+  ====================================================================== */
+  const toastRoot = document.getElementById("toast-root");
+  const TOAST_ICONS = { success: "✓", error: "✕", warning: "!", info: "i" };
+  const TOAST_LABELS = { success: "Success", error: "Error", warning: "Warning", info: "Notice" };
+
+  function showToast(props){
+    const {
+      variant = "info",       // success | error | warning | info
+      title = TOAST_LABELS[props.variant] || "Notice",
+      message = "",
+      duration = 4000
+    } = props;
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${variant}`;
+
+    const icon = document.createElement("div");
+    icon.className = "toast-icon";
+    icon.textContent = TOAST_ICONS[variant] || "i";
+
+    const contentEl = document.createElement("div");
+    contentEl.className = "toast-content";
+    const titleEl = document.createElement("div");
+    titleEl.className = "toast-title";
+    titleEl.textContent = title;
+    contentEl.appendChild(titleEl);
+    if (message) {
+      const msgEl = document.createElement("div");
+      msgEl.className = "toast-msg";
+      msgEl.textContent = message;
+      contentEl.appendChild(msgEl);
+    }
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "toast-close";
+    closeBtn.setAttribute("aria-label", "Dismiss notification");
+    closeBtn.textContent = "×";
+
+    const bar = document.createElement("div");
+    bar.className = "toast-bar";
+
+    toast.appendChild(icon);
+    toast.appendChild(contentEl);
+    toast.appendChild(closeBtn);
+    if (duration > 0) toast.appendChild(bar);
+
+    toastRoot.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add("in"));
+
+    let dismissTimer = null;
+
+    function close(){
+      if (dismissTimer) clearTimeout(dismissTimer);
+      toast.classList.remove("in");
+      toast.classList.add("out");
+      toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    }
+
+    closeBtn.addEventListener("click", close);
+
+    if (duration > 0) {
+      bar.style.animationDuration = duration + "ms";
+      requestAnimationFrame(() => bar.classList.add("animate"));
+      dismissTimer = setTimeout(close, duration);
+    }
+
+    return { close };
+  }
+
+  /* ======================================================================
+     DEMO WIRING — every element below is generated by the functions above
+  ====================================================================== */
+
+  // ---- Buttons ----
+  const btnRow = document.getElementById("btn-variants");
+  [
+    { text: "Primary", variant: "primary" },
+    { text: "Secondary", variant: "secondary" },
+    { text: "Ghost", variant: "ghost" },
+    { text: "Danger", variant: "danger" },
+    { text: "Success", variant: "success" },
+    { text: "Small", variant: "primary", size: "sm" },
+    { text: "Large", variant: "primary", size: "lg" },
+    { text: "With icon", variant: "secondary", icon: "★" },
+    { text: "Disabled", variant: "primary", disabled: true }
+  ].forEach(p => btnRow.appendChild(createButton({
+    ...p,
+    onClick: () => showToast({ variant: "info", title: "Button clicked", message: `You clicked "${p.text}"` })
+  })));
+
+  // ---- Cards ----
+  const cardGrid = document.getElementById("card-grid");
+  cardGrid.appendChild(createCard({
+    eyebrow: "Component",
+    title: "Default card",
+    description: "A plain card with no elevation — used for calm, low-priority content.",
+    variant: "default"
+  }));
+  cardGrid.appendChild(createCard({
+    media: { label: "IMAGE PLACEHOLDER", bg: "linear-gradient(135deg, #E7ECFF, #F6F4EF)" },
+    eyebrow: "Featured",
+    title: "Elevated project card",
+    description: "Lifts on hover — used to draw attention to featured content.",
+    variant: "elevated",
+    footer: [
+      { text: "View", variant: "primary", size: "sm", onClick: () => showToast({ variant: "success", title: "Opened", message: "Viewing project details" }) },
+      { text: "Dismiss", variant: "ghost", size: "sm" }
+    ]
+  }));
+  cardGrid.appendChild(createCard({
+    eyebrow: "Pricing",
+    title: "Outline card",
+    description: "A bordered variant with a footer action, e.g. for pricing tiers.",
+    variant: "outline",
+    footer: [
+      { text: "Choose plan", variant: "secondary", size: "sm", onClick: () => showToast({ variant: "success", title: "Plan selected" }) }
+    ]
+  }));
+
+  // ---- Modals ----
+  const modalTriggerRow = document.getElementById("modal-triggers");
+
+  modalTriggerRow.appendChild(createButton({
+    text: "Open info modal",
+    variant: "secondary",
+    onClick: () => {
+      const m = createModal({
+        title: "About this kit",
+        content: "<p>Every component on this page — buttons, cards, this dialog — comes from the same four functions, called with different props. Nothing here is a one-off.</p>",
+        actions: [{ text: "Got it", variant: "primary" }]
+      });
+      m.open();
+    }
+  }));
+
+  modalTriggerRow.appendChild(createButton({
+    text: "Open confirm dialog",
+    variant: "danger",
+    onClick: () => {
+      const m = createModal({
+        title: "Delete this project?",
+        content: "<p>This can't be undone. The project and its files will be permanently removed.</p>",
+        actions: [
+          { text: "Cancel", variant: "ghost" },
+          { text: "Delete", variant: "danger", onClick: () => showToast({ variant: "error", title: "Project deleted", message: "This action can't be undone" }) }
+        ]
+      });
+      m.open();
+    }
+  }));
+
+  modalTriggerRow.appendChild(createButton({
+    text: "Open form modal",
+    variant: "primary",
+    onClick: () => {
+      const formBody = document.createElement("div");
+      formBody.innerHTML = `
+        <div class="modal-field">
+          <label for="modal-email-input">Email address</label>
+          <input type="email" id="modal-email-input" placeholder="you@example.com" />
+        </div>
+      `;
+      const m = createModal({
+        title: "Subscribe to updates",
+        content: formBody,
+        actions: [
+          { text: "Cancel", variant: "ghost" },
+          {
+            text: "Subscribe",
+            variant: "primary",
+            closesModal: false,
+            onClick: () => {
+              const input = formBody.querySelector("#modal-email-input");
+              const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+              if (!valid) {
+                input.style.borderColor = "var(--danger)";
+                input.focus();
+                showToast({ variant: "error", title: "Invalid email", message: "Enter a valid email address" });
+                return;
+              }
+              m.close();
+              showToast({ variant: "success", title: "Subscribed", message: input.value.trim() });
+            }
+          }
+        ]
+      });
+      m.open();
+    }
+  }));
+
+  // ---- Toasts ----
+  const toastTriggerRow = document.getElementById("toast-triggers");
+  [
+    { variant: "success", label: "Trigger success", title: "Changes saved", message: "Your changes were saved successfully." },
+    { variant: "error", label: "Trigger error", title: "Upload failed", message: "The file exceeds the 10MB limit." },
+    { variant: "warning", label: "Trigger warning", title: "Low storage", message: "You're at 90% of your storage quota." },
+    { variant: "info", label: "Trigger info", title: "New version available", message: "Refresh to get the latest build." }
+  ].forEach(cfg => {
+    toastTriggerRow.appendChild(createButton({
+      text: cfg.label,
+      variant: "secondary",
+      onClick: () => showToast({ variant: cfg.variant, title: cfg.title, message: cfg.message, duration: 4000 })
+    }));
+  });
+
+  toastTriggerRow.appendChild(createButton({
+    text: "Stack 3 toasts",
+    variant: "ghost",
+    onClick: () => {
+      showToast({ variant: "info", title: "Step 1", message: "Preparing export…", duration: 3000 });
+      setTimeout(() => showToast({ variant: "info", title: "Step 2", message: "Compressing files…", duration: 3500 }), 250);
+      setTimeout(() => showToast({ variant: "success", title: "Step 3", message: "Export complete", duration: 4000 }), 500);
+    }
+  }));
+
+})();
+</script>
+</body>
+</html>
